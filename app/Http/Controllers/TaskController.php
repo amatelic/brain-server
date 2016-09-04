@@ -8,36 +8,39 @@ use Carbon\Carbon;
 use Excel;
 use File;
 use App\Http\Requests;
+use App\Helpers\JSONAPI;
 use App\Helpers\CSV;
 class TaskController extends Controller
 {
 
-  public function getExelFile($user, $month = null, $year = null)
+  function __construct()
   {
-    $year = isset($year) ? $year : Carbon::now()->year;
-    $month = isset($month) ? $month : sprintf("%02d", Carbon::now()->month);
-    return Excel::load('storage/app/' . $user . '/' . $year . '/' . $month . '.csv');
+    $this->jsonapi = new JSONAPI();
   }
 
+  /**
+   * Get all users tasks
+   * @param Request
+   * @return Response
+   */
   public function tasks(Request $request)
   {
     $day =  Carbon::now()->day;
-    $reader = $this->getExelFile('amatelic');
+    $token = $request->header('Api-key');
+    $csv = new CSV($token);
+    $reader = $csv->getExelFile();
     $obj = ['data' => []];
-    // return dd($reader->toArray());
     foreach ($reader->toArray()[0] as $key => $read) {
       $title = $read['task'];
       unset($read['task']);
-      $obj['data'][$key] = [
-        'type' => 'tasks',
-        'id' => $key,
-        'attributes' => [
+      $obj['data'][$key] = $this->createTasks($key,
+        [
           'name' => $title,
           'description' => 'bla bla',
           'complited' => ($read[$day] >= 1) ? true : false,
           'monthly' => implode($read, ','),
         ]
-      ];
+      );
     }
     return new Response($obj);
   }
@@ -49,7 +52,7 @@ class TaskController extends Controller
     $name = $attributes['name'];
     $monthly = $attributes['monthly'];
     $content = implode(',', array_merge([$name], $monthly));
-    $csv = new CSV('amatelic');
+    $csv = new CSV($token);
     $csv->addTask($content);
     $task = $this->createTasks(3, $attributes);
     return new Response([
@@ -59,7 +62,8 @@ class TaskController extends Controller
 
   public function updateTask(Request $request, $id)
   {
-    $csv = new CSV('amatelic');
+    $token = $request->header('Api-key');
+    $csv = new CSV($token);
     $attributes = $request->input('data.attributes');
     $id = (int)$id + 1; //have to increment id by one
     $csv->update($id, $attributes);

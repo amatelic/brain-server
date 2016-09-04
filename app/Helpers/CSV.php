@@ -14,20 +14,20 @@ class CSV
   public $user;
   public $year;
   public $month;
-  function __construct($user = null, $year = null, $month = null)
+  function __construct($email = null, $year = null, $month = null)
   {
-    if (!isset($user)) {
-      throw new Exception('You didn\'t include the csv user');
+    if (!isset($email)) {
+      throw new Exception('You didn\'t include the csv email');
     }
 
-    $this->user = $user;
+    $this->email = $email;
     $this->year = isset($year) ? $year : Carbon::now()->year;
     $this->month = isset($year) ? $month : sprintf("%02d", Carbon::now()->month);
   }
 
   public function getFilePath()
   {
-    return storage_path('app/' . $this->user .'/' . $this->year. '/' . $this->month . '.csv');
+    return storage_path('app/' . $this->email .'/' . $this->year. '/' . $this->month . '.csv');
   }
 
   function getRowLabels() {
@@ -61,7 +61,7 @@ class CSV
     }
 
     $day =  Carbon::now()->day;
-    $file = storage_path('/app/' . $this->user . '/' . $this->year . '/' . $this->month . '.csv');
+    $file = storage_path('/app/' . $this->email . '/' . $this->year . '/' . $this->month . '.csv');
     $ff = File::get($file);
     $col = explode(PHP_EOL, $ff);
     $row = explode(',', $col[$index]);
@@ -102,6 +102,6 @@ class CSV
       $excel->sheet('Sheetname', function($sheet) use($data){
           $sheet->fromArray($data, null, 'A1', false, false);
       });
-    })->store('csv', storage_path('app/' . $this->user . '/' . $this->year));
+    })->store('csv', storage_path('app/' . $this->email . '/' . $this->year));
   }
 }

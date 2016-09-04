@@ -24,6 +24,8 @@ Route::get('/tutorial', function () {
     return view('welcome');
 });
 
+Route::get('/users', 'UserController@getUser');
+
 Route::get('/data', function () {
   $csv = new CSV('amatelic');
   $days = Carbon::now()->modify( 'next month' );
@@ -40,22 +42,20 @@ Route::get('/data', function () {
   // $csv->createCSV('bla', $data);
 });
 
-Route::get('users', function() {
-  return User::all();
-});
 
 Route::get('test/{id}', 'TaskController@updateTask');
 
 Route::group(['prefix' => 'api', 'middleware' => 'cors'], function () {
     Route::post('token', function (Request $request) {
         $grant_type = $request->input('grant_type');
-        $username = $request->input('username');
+        $email = $request->input('username');
         $password = $request->input('password');
+        $user = User::where('email', $email)->get()[0];
         if ($grant_type === 'password') {
-          if ($username === 'test' && $password === 'test') {
+          if (isset($user)) {
             return (new Response([
-              'access_token' => 'secret token!',
-              'user_id' => 1,
+              'access_token' => $user->email,
+              'user_id' => $user->id,
             ], 200));
           }
         }
@@ -64,16 +64,18 @@ Route::group(['prefix' => 'api', 'middleware' => 'cors'], function () {
     });
 
     Route::post('register', function (Request $request) {
-      //still not implemented
+
+      $email = $request->input('email');
       $user = new User([
-        'nama' => $request->input('name'),
-        'username' => 'test',
+        'name' => $request->input('name'),
+        'username' => $request->input('username'),
         'email' => $request->input('email'),
         'password' => Crypt::encrypt($request->input('password')),
         'plan' => 'basic',
         'auth' => 'basic',
       ]);
       $user->save();
+      User::createTask($email);
       return new Response($request, 200);
     });
 
