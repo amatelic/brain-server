@@ -21,8 +21,8 @@ class CSV
     }
 
     $this->email = $email;
-    $this->year = isset($year) ? $year : Carbon::now()->year;
-    $this->month = isset($year) ? $month : sprintf("%02d", Carbon::now()->month);
+    $this->year = isset($year) ? sprintf("%02d", $year) : sprintf("%02d", Carbon::now()->year);
+    $this->month = isset($year) ? sprintf("%02d", $month) : sprintf("%02d", Carbon::now()->month);
   }
 
   public function getFilePath()
@@ -51,7 +51,11 @@ class CSV
 
   public function getExelFile()
   {
-    return Excel::load($this->getFilePath());
+    if (File::exists($this->getFilePath()))
+    {
+      return Excel::load($this->getFilePath())->toArray();
+    }
+    return [[]];
   }
 
   public function update($index = null, $data = null)
@@ -87,7 +91,7 @@ class CSV
     $exel = $this->getExelFile();
     $dayInMonth = Carbon::now()->daysInMonth;
     $header = array_merge(["tasks"], range(1, $dayInMonth));
-    $tasks = array_column($exel->toArray()[0], 'task');
+    $tasks = array_column($exel[0], 'task');
     $csv[0] = $header;
     foreach ($tasks as $key => $value) {
       $csv[] = array_merge([trim($value)], array_fill(0, $dayInMonth, "0"));

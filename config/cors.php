@@ -1,6 +1,6 @@
 <?php
 return [
-    'supportsCredentials' => false,
+    'supportsCredentials' => true,
     'allowedOrigins' => ['*'],
     'allowedHeaders' => ['Origin','Content-Type', 'Accept','Api-key', 'grant_type', 'Authorization'],
     'allowedMethods' => ['GET', 'POST', 'PUT',  'DELETE', 'PATCH'],

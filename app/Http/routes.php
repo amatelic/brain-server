@@ -20,8 +20,8 @@ Route::get('/', function () {
     return "view('welcome')";
 });
 
-Route::get('/tutorial', function () {
-    return view('welcome');
+Route::get('/tutorial', function() {
+  return 'File not working';
 });
 
 Route::get('/users', 'UserController@getUser');
@@ -46,42 +46,12 @@ Route::get('/data', function () {
 Route::get('test/{id}', 'TaskController@updateTask');
 
 Route::group(['prefix' => 'api', 'middleware' => 'cors'], function () {
-    Route::post('token', function (Request $request) {
-        $grant_type = $request->input('grant_type');
-        $email = $request->input('username');
-        $password = $request->input('password');
-        $user = User::where('email', $email)->get()[0];
-        if ($grant_type === 'password') {
-          if (isset($user)) {
-            return (new Response([
-              'access_token' => $user->email,
-              'user_id' => $user->id,
-            ], 200));
-          }
-        }
-        $error =  array('error' => 'User dosen\'t exsist.');
-        return (new Response($error, 400));
-    });
-
-    Route::post('register', function (Request $request) {
-
-      $email = $request->input('email');
-      $user = new User([
-        'name' => $request->input('name'),
-        'username' => $request->input('username'),
-        'email' => $request->input('email'),
-        'password' => Crypt::encrypt($request->input('password')),
-        'plan' => 'basic',
-        'auth' => 'basic',
-      ]);
-      $user->save();
-      User::createTask($email);
-      return new Response($request, 200);
-    });
-
+    Route::post('token', 'UserController@userToken');
+    Route::get('/tasks', 'TaskController@queryTask');
     Route::post('tasks', 'TaskController@createTask');
     Route::patch('tasks/{id}', 'TaskController@updateTask');
     Route::get('users/{id}', 'UserController@getUser');
+    Route::post('register', 'UserController@register');
     Route::get('users/{id}/tasks', 'TaskController@tasks');
     Route::get('users/{id}/messages', 'MessageController@messages');
 });

@@ -10,6 +10,7 @@ use File;
 use App\Http\Requests;
 use App\Helpers\JSONAPI;
 use App\Helpers\CSV;
+
 class TaskController extends Controller
 {
 
@@ -25,24 +26,10 @@ class TaskController extends Controller
    */
   public function tasks(Request $request)
   {
-    $day =  Carbon::now()->day;
     $token = $request->header('Api-key');
     $csv = new CSV($token);
     $reader = $csv->getExelFile();
-    $obj = ['data' => []];
-    foreach ($reader->toArray()[0] as $key => $read) {
-      $title = $read['task'];
-      unset($read['task']);
-      $obj['data'][$key] = $this->createTasks($key,
-        [
-          'name' => $title,
-          'description' => 'bla bla',
-          'complited' => ($read[$day] >= 1) ? true : false,
-          'monthly' => implode($read, ','),
-        ]
-      );
-    }
-    return new Response($obj);
+    return new Response($this->jsonapi->createModels($reader, 'task'));
   }
   public function createTask(Request $request)
   {
@@ -58,6 +45,18 @@ class TaskController extends Controller
     return new Response([
       'data' => [$task]
     ], 204);
+  }
+
+
+  public function queryTask(Request $request)
+  {
+    $filter =$request->input('filter');
+    $day =  Carbon::now()->day;
+    $year =  Carbon::now()->year;
+    $token = $request->header('Api-key');
+    $csv = new CSV($token, $year, $filter['month']);
+    $reader = $csv->getExelFile();
+    return new Response($this->jsonapi->createModels($reader, 'task'));
   }
 
   public function updateTask(Request $request, $id)

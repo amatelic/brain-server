@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Excel;
 use File;
+use Log;
 use Exception;
 
 /**
@@ -22,7 +23,32 @@ class JSONAPI
     ];
   }
 
-  public function sendResponse($data = [], $relation = [], $meta = [], $status =200)
+  public function createModels($collection, $type)
+  {
+    $day =  Carbon::now()->day;
+    $month =  Carbon::now()->month;
+    $obj = ['data' => []];
+    if (empty($collection[0])) {
+      return $obj;
+    } else {
+      foreach ($collection[0] as $key => $read) {
+        $title = $read['task'];
+        unset($read['task']);
+        $obj['data'][$key] = static::createType($key, $type,
+          [
+            'name' => $title,
+            'description' => 'bla bla',
+            'complited' => ($read[$day] >= 1) ? true : false,
+            'monthly' => implode($read, ','),
+            'month' => sprintf("%02d", $month),
+          ]
+        );
+      }
+      return $obj;
+    }
+  }
+
+  public function sendResponse($data = [], $relation = [], $meta = [], $status = 200)
   {
     //add relationships data
     $data['relationships'] = $relation;
