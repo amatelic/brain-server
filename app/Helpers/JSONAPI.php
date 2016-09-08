@@ -23,10 +23,10 @@ class JSONAPI
     ];
   }
 
-  public function createModels($collection, $type)
+  public function createModels($collection, $type, $month = null)
   {
     $day =  Carbon::now()->day;
-    $month =  Carbon::now()->month;
+    $month =  isset($month) ? sprintf("%02d", $month) : sprintf("%02d", Carbon::now()->month);
     $obj = ['data' => []];
     if (empty($collection[0])) {
       return $obj;

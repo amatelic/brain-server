@@ -10,6 +10,7 @@ use File;
 use App\Http\Requests;
 use App\Helpers\JSONAPI;
 use App\Helpers\CSV;
+use Log;
 
 class TaskController extends Controller
 {
@@ -29,7 +30,8 @@ class TaskController extends Controller
     $token = $request->header('Api-key');
     $csv = new CSV($token);
     $reader = $csv->getExelFile();
-    return new Response($this->jsonapi->createModels($reader, 'task'));
+    $month =  Carbon::now()->month;
+    return new Response($this->jsonapi->createModels($reader, 'task', $month));
   }
   public function createTask(Request $request)
   {
@@ -54,9 +56,10 @@ class TaskController extends Controller
     $day =  Carbon::now()->day;
     $year =  Carbon::now()->year;
     $token = $request->header('Api-key');
+    Log::info($filter);
     $csv = new CSV($token, $year, $filter['month']);
     $reader = $csv->getExelFile();
-    return new Response($this->jsonapi->createModels($reader, 'task'));
+    return new Response($this->jsonapi->createModels($reader, 'task', $filter['month']));
   }
 
   public function updateTask(Request $request, $id)

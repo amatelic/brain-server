@@ -4,6 +4,7 @@ use Illuminate\Http\Response;
 use Illuminate\Http\Request;
 use App\Helpers\CSV;
 use App\User;
+use Log;
 //http://stackoverflow.com/questions/24584013/ember-cli-rundown-using-it-with-laravel-or-other-backend-frameworks
 /*
 |--------------------------------------------------------------------------
